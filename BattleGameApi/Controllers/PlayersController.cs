@@ -65,43 +65,103 @@ namespace BattleGameApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(PlayerDto input)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            // if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var player = new Player
+            // var player = new Player
+            // {
+            //     PlayerName = input.PlayerName,
+            //     FullName = input.FullName,
+            //     Age = input.Age,
+            //     Level = input.Level
+            // };
+
+            // // Gán asset mới nếu đủ level
+            // if (input.AssetIds != null && input.AssetIds.Any())
+            // {
+            //     var assets = await _db.Assets
+            //         .Where(a => input.AssetIds.Contains(a.AssetId))
+            //         .ToListAsync();
+
+            //     foreach (var asset in assets)
+            //     {
+            //         if (player.Level >= asset.LevelRequired)
+            //         {
+            //             player.PlayerAssets.Add(new PlayerAsset
+            //             {
+            //                 Player = player,
+            //                 AssetId = asset.AssetId
+            //             });
+            //         }
+            //         else
+            //         {
+            //             return BadRequest($"Player level {player.Level} is lower than required level {asset.LevelRequired} for asset '{asset.AssetName}'.");
+            //         }
+            //     }
+            // }
+
+            // _db.Players.Add(player);
+            // await _db.SaveChangesAsync();
+            // return CreatedAtAction(nameof(GetPlayer), new { id = player.PlayerId }, player);
+            try
             {
-                PlayerName = input.PlayerName,
-                FullName = input.FullName,
-                Age = input.Age,
-                Level = input.Level
-            };
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            // Gán asset mới nếu đủ level
-            if (input.AssetIds != null && input.AssetIds.Any())
-            {
-                var assets = await _db.Assets
-                    .Where(a => input.AssetIds.Contains(a.AssetId))
-                    .ToListAsync();
+                // Validate required fields
+                if (string.IsNullOrEmpty(input.PlayerName))
+                    return BadRequest("PlayerName is required");
 
-                foreach (var asset in assets)
+                if (input.Level <= 0)
+                    return BadRequest("Level must be greater than 0");
+
+                var player = new Player
                 {
-                    if (player.Level >= asset.LevelRequired)
+                    PlayerName = input.PlayerName,
+                    FullName = input.FullName,
+                    Age = input.Age,
+                    Level = input.Level
+                };
+
+                if (input.AssetIds != null && input.AssetIds.Any())
+                {
+                    var assets = await _db.Assets
+                        .Where(a => input.AssetIds.Contains(a.AssetId))
+                        .ToListAsync();
+
+                    foreach (var asset in assets)
                     {
-                        player.PlayerAssets.Add(new PlayerAsset
+                        if (player.Level >= asset.LevelRequired)
                         {
-                            Player = player,
-                            AssetId = asset.AssetId
-                        });
-                    }
-                    else
-                    {
-                        return BadRequest($"Player level {player.Level} is lower than required level {asset.LevelRequired} for asset '{asset.AssetName}'.");
+                            player.PlayerAssets.Add(new PlayerAsset
+                            {
+                                Player = player,
+                                AssetId = asset.AssetId
+                            });
+                        }
+                        else
+                        {
+                            return BadRequest($"Player level {player.Level} is lower than required level {asset.LevelRequired} for asset '{asset.AssetName}'.");
+                        }
                     }
                 }
-            }
 
-            _db.Players.Add(player);
-            await _db.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetPlayer), new { id = player.PlayerId }, player);
+                _db.Players.Add(player);
+                await _db.SaveChangesAsync();
+
+                // Return the created player with assets
+                var createdPlayer = await _db.Players
+                    .Include(p => p.PlayerAssets)
+                    .ThenInclude(pa => pa.Asset)
+                    .FirstOrDefaultAsync(p => p.PlayerId == player.PlayerId);
+
+                return CreatedAtAction(nameof(GetPlayer), new { id = player.PlayerId }, createdPlayer);
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                Console.WriteLine($"Error creating player: {ex}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         // PUT: api/players/{id}

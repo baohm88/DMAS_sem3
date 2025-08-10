@@ -192,22 +192,36 @@ const PlayersPage = () => {
 
     const handleSave = async () => {
         try {
-            if (!form.playerName || !form.level) {
+            if (!form.playerName || !form.level || !form.age) {
                 toast.error("All fields are required!");
                 return;
             }
 
+            // Prepare data for API
+            const playerData = {
+                playerName: form.playerName,
+                fullName: form.fullName,
+                age: parseInt(form.age) || 0,
+                level: parseInt(form.level) || 1,
+                assetIds: form.assetIds.map((id) => parseInt(id)), // Ensure IDs are numbers
+            };
+
             if (editId) {
-                await editPlayer(editId, form);
+                await editPlayer(editId, playerData);
                 toast.success("Player's info updated successfully!");
             } else {
-                await addPlayer(form);
+                await addPlayer(playerData);
                 toast.success("Player added successfully!");
             }
             handleCloseModal();
         } catch (err) {
-            console.error("Failed to save player:", err);
-            toast.error(err.response?.data?.message || "Failed to save player");
+            const errorMessage =
+                err.response?.data?.message ||
+                err.response?.data ||
+                err.message ||
+                "Failed to save player";
+            console.error("Save error:", err);
+            toast.error(`Error: ${errorMessage}`);
         }
     };
 
@@ -219,7 +233,7 @@ const PlayersPage = () => {
     const handleConfirmDelete = async () => {
         try {
             await removePlayer(deleteId);
-            toast.success("Xóa người chơi thành công!");
+            toast.success("Player deleted successfully!");
             setShowConfirm(false);
         } catch (err) {
             console.error("Failed to delete player:", err);

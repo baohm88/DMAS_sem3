@@ -14,8 +14,11 @@ namespace BattleGameApi.Models
         [MaxLength(150)]
         public string? FullName { get; set; }
 
+        [Range(0, 150)]
         public int Age { get; set; }
 
+        [Required]
+        [Range(0, 10)]
         public int Level { get; set; }
 
         public ICollection<PlayerAsset> PlayerAssets { get; set; } = new List<PlayerAsset>();
