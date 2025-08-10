@@ -27,18 +27,6 @@ export const usePlayers = () => {
         }
     };
 
-    // const addPlayer = async (player) => {
-    //     try {
-    //         const newPlayer = await createPlayer(player);
-    //         console.log("RES: ", newPlayer);
-
-    //         setPlayers([...players, newPlayer]);
-    //         return newPlayer;
-    //     } catch (err) {
-    //         throw err;
-    //     }
-    // };
-
     const addPlayer = async (player) => {
         try {
             // Convert data types to match backend
