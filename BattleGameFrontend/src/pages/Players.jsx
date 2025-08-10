@@ -7,6 +7,7 @@ import PlayersTable from "../components/players/PlayersTable";
 import FormModal from "../components/common/FormModal";
 import PlayerForm from "../components/players/PlayerForm";
 import ConfirmationModal from "../components/common/ConfirmationModal";
+import FullPageSpinner from "../components/common/Spinner.jsx";
 
 const PlayersPage = () => {
     const { players, loading, addPlayer, editPlayer, removePlayer } =
@@ -112,7 +113,7 @@ const PlayersPage = () => {
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <FullPageSpinner />;
     }
 
     return (

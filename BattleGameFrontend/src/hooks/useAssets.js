@@ -1,4 +1,3 @@
-// src/hooks/useAssets.js
 import { useState, useEffect } from "react";
 import {
     getAssets,

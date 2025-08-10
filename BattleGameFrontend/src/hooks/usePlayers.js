@@ -1,4 +1,3 @@
-// src/hooks/usePlayers.js
 import { useState, useEffect } from "react";
 import {
     getPlayers,

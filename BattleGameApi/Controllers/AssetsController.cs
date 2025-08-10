@@ -1,6 +1,3 @@
-// 
-
-
 using BattleGameApi.Data;
 using BattleGameApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -83,7 +80,7 @@ namespace BattleGameApi.Controllers
                 exist.LevelRequired = input.LevelRequired;
                 await _db.SaveChangesAsync();
 
-                return Ok(exist); 
+                return Ok(exist);
             }
             catch (Exception ex)
             {
