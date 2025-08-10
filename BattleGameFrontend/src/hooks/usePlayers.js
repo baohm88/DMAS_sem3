@@ -45,20 +45,14 @@ export const usePlayers = () => {
             const playerData = {
                 ...player,
                 age: parseInt(player.age) || 0,
-                level: parseInt(player.level) || 1,
+                level: parseInt(player.level) || 0,
                 assetIds: player.assetIds || [],
             };
 
-            const response = await createPlayer(playerData);
+            const { data } = await createPlayer(playerData);
 
             // Ensure the response contains the full player data
-            const newPlayer = {
-                ...response.data,
-                assetNames:
-                    response.data.PlayerAssets?.map(
-                        (pa) => pa.Asset?.AssetName
-                    ) || [],
-            };
+            const newPlayer = data;
 
             setPlayers((prev) => [...prev, newPlayer]);
             return newPlayer;
@@ -73,12 +67,28 @@ export const usePlayers = () => {
 
     const editPlayer = async (id, player) => {
         try {
-            const updatedPlayer = await updatePlayer(id, player);
-            setPlayers(
-                players.map((p) => (p.playerId === id ? updatedPlayer : p))
+            // Convert data types to match backend
+            const playerData = {
+                ...player,
+                age: parseInt(player.age) || 0,
+                level: parseInt(player.level) || 1,
+                assetIds: player.assetIds || [],
+            };
+
+            const { data } = await updatePlayer(id, playerData);
+            const updatedPlayer = data;
+
+            // Update players with new data
+            setPlayers((prev) =>
+                prev.map((p) => (p.playerId === id ? updatedPlayer : p))
             );
+
             return updatedPlayer;
         } catch (err) {
+            console.error(
+                "Error updating player:",
+                err.response?.data || err.message
+            );
             throw err;
         }
     };
@@ -88,6 +98,10 @@ export const usePlayers = () => {
             await deletePlayer(id);
             setPlayers(players.filter((p) => p.playerId !== id));
         } catch (err) {
+            console.error(
+                "Error deleting player:",
+                err.response?.data || err.message
+            );
             throw err;
         }
     };
